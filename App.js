@@ -4,15 +4,18 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import axios from 'axios';
 import Loading from './Loading';
+import Weather from './Weather';
 
 const API_KEY = '0574b4b5f55e3a70926870f067de4922';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [temp, setTemp] = useState(null);
 
   async function getWeather(latitude, longitude) {
     const { data } = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`);
-    console.log('✅', data);
+    setIsLoading(false);
+    setTemp(Math.round(data.main.temp));
   }
   
   useEffect(() => {
@@ -21,7 +24,6 @@ export default function App() {
         await Location.requestForegroundPermissionsAsync();
         const { coords: {latitude, longitude} } = await Location.getCurrentPositionAsync();
         getWeather(latitude, longitude);
-        setIsLoading(false);
       } catch (error) {
         Alert.alert('Permission to access location', 'Was Denied !')
       }
@@ -30,6 +32,6 @@ export default function App() {
   }, []);
 
   return (
-    isLoading ? <Loading /> : null
+    isLoading ? <Loading /> : <Weather temperature={temp} />
   );
 }
